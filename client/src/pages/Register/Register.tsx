@@ -2,6 +2,8 @@ import { useState } from "react";
 import type { FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
+import { registerUser } from "../../services/authService";
+
 import {
   Stethoscope,
   User,
@@ -60,24 +62,12 @@ export default function Register() {
     try {
       setLoading(true);
 
-      const response = await fetch("http://localhost:5000/api/auth/register", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          fullName: formData.fullName,
-          email: formData.email,
-          password: formData.password,
-          phone: formData.phone,
-        }),
+      await registerUser({
+        fullName: formData.fullName,
+        email: formData.email,
+        password: formData.password,
+        phone: formData.phone,
       });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || "Registration failed.");
-      }
 
       alert("Account created successfully!");
 
@@ -85,7 +75,13 @@ export default function Register() {
     } catch (error: any) {
       console.error("Registration error:", error);
 
-      alert(error.message || "Unable to create account.");
+      const message =
+        error?.response?.data?.message ||
+        error?.response?.data?.error ||
+        error?.message ||
+        "Unable to create account.";
+
+      alert(message);
     } finally {
       setLoading(false);
     }
